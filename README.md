@@ -32,20 +32,53 @@ Progress is saved in the browser, so you can stop and continue later. Back, Redo
 
 ## Running it
 
-The microphone only works on secure pages: `https://`, or `http://localhost` on the same machine.
+Browsers only allow microphone access on secure pages: `https://`, or `http://localhost` on the same machine. Opening `index.html` straight from Finder (`file://`) won't work, and nor will `http://<your-mac's-IP>` from another device.
 
-**On your computer:**
+### On a Mac
 
-```sh
-python3 -m http.server 8000
-# then open http://localhost:8000
-```
+1. Open **Terminal** and go to the project folder:
 
-**On an iPhone:** host it over https. The easiest way is GitHub Pages: repo **Settings → Pages → Deploy from a branch → `main` / root**. It will then be at `https://corbishley.github.io/instrument_tuner/`.
+   ```sh
+   cd ~/git/corbishley/instrument_tuner
+   ```
 
-Open it in Safari, then **Share → Add to Home Screen** to get a full-screen app icon. Allow the microphone when asked. If you denied it earlier, go to **Settings → Apps → Safari → Microphone**.
+2. Start a local web server. Python 3 comes with macOS's command line tools; if `python3` asks you to install them, accept.
 
-Tips: use a quiet room, put the phone on the music stand, and play each key firmly and hold it.
+   ```sh
+   python3 -m http.server 8000
+   ```
+
+3. Open **http://localhost:8000** in Safari, Chrome or Firefox and choose **Piano**.
+4. Press **Start** and allow the microphone when the browser asks.
+   - If you clicked "Don't Allow": in Safari go to **Safari → Settings → Websites → Microphone** and set `localhost` to **Allow**. In Chrome, click the icon to the left of the address bar.
+   - If there's still no sound: check **System Settings → Privacy & Security → Microphone** and make sure your browser is switched on.
+5. Press **Ctrl+C** in Terminal to stop the server when you're done.
+
+A MacBook's built-in mic works fine. Put the laptop on or near the piano, not across the room.
+
+### On an iPhone
+
+The iPhone needs the page served over `https://`, so it has to be hosted somewhere. GitHub Pages is the simplest option:
+
+1. **Turn on GitHub Pages** (one-off):
+   - On github.com, open the repo → **Settings → Pages**.
+   - Under **Build and deployment**, set **Source** to **Deploy from a branch**, branch **`main`**, folder **`/ (root)`**, then **Save**.
+   - After a minute or two the page shows the address: `https://corbishley.github.io/instrument_tuner/`.
+   - This repo is currently **private**. GitHub Pages for private repos needs a paid plan (GitHub Pro or higher), and even then the published site is public. On a free account, make the repo public first (**Settings → General → Danger Zone → Change visibility**). The site contains no personal data, and results are only stored on your phone.
+2. **Open it on the iPhone** in **Safari** and go to `https://corbishley.github.io/instrument_tuner/`.
+3. **Add it to the Home Screen** (optional, recommended): tap **Share → Add to Home Screen → Add**. It then opens full-screen like an app, with its own icon.
+4. **Allow the microphone**: choose **Piano**, press **Start** and tap **Allow** when asked.
+   - If you tapped "Don't Allow": tap **aA** in the Safari address bar → **Website Settings → Microphone → Allow**. Or go to **Settings → Apps → Safari → Microphone** and set it to **Ask** or **Allow**.
+5. **Updates**: after you push changes to `main`, GitHub Pages republishes within a few minutes. If the phone still shows the old version, pull down to reload, or close and reopen the Home Screen app.
+
+The screen stays awake while the tuner is listening. Turn off Low Power Mode if it dims anyway.
+
+### Tips for good readings
+
+- Use a quiet room: no TV, fridge hum or people talking.
+- Put the phone on the music stand, or the laptop on the piano lid, with the mic facing the strings.
+- Play each key firmly (mezzo-forte or louder) and hold it down until the tuner moves on.
+- Progress saves automatically in that browser. The Mac and the iPhone keep separate progress.
 
 ## How it works
 
