@@ -9,7 +9,7 @@ There's no build step, framework or dependencies: just HTML, CSS and plain JavaS
 | Instrument | Status |
 |---|---|
 | [Piano](piano/) | Working |
-| Guitar | Planned |
+| [Guitar](guitar/) | Working |
 
 ### Piano
 
@@ -30,6 +30,15 @@ Options:
 
 Progress is saved in the browser, so you can stop and continue later. Back, Redo and Skip are always available, and tapping any key jumps to it.
 
+### Guitar
+
+A live tuner: pluck a string and turn the peg until the needle is in the green (within 3 cents; amber up to 10).
+
+- **Auto-detect** works out which string you're playing and tells you whether to tighten or loosen it. If a string is so far out that it's picked up as its neighbour, tap the string you're tuning to lock onto it. Tap it again, or **Auto-detect**, to go back.
+- A ✓ appears on each string once it has held in tune for a moment.
+- **Tunings:** Standard, Drop D, half step down, whole step down, Drop C, DADGAD, Open G, Open D and Open E.
+- **Reference pitch:** defaults to A4 = 440 Hz. The tuning and reference pitch are remembered.
+
 ## Running it
 
 Browsers only allow microphone access on secure pages: `https://`, or `http://localhost` on the same machine. Opening `index.html` straight from Finder (`file://`) won't work, and nor will `http://<your-mac's-IP>` from another device.
@@ -48,7 +57,7 @@ Browsers only allow microphone access on secure pages: `https://`, or `http://lo
    python3 -m http.server 8000
    ```
 
-3. Open **http://localhost:8000** in Safari, Chrome or Firefox and choose **Piano**.
+3. Open **http://localhost:8000** in Safari, Chrome or Firefox and choose **Piano** or **Guitar**.
 4. Press **Start** and allow the microphone when the browser asks.
    - If you clicked "Don't Allow": in Safari go to **Safari → Settings → Websites → Microphone** and set `localhost` to **Allow**. In Chrome, click the icon to the left of the address bar.
    - If there's still no sound: check **System Settings → Privacy & Security → Microphone** and make sure your browser is switched on.
@@ -67,7 +76,7 @@ The iPhone needs the page served over `https://`, so it has to be hosted somewhe
    - This repo is currently **private**. GitHub Pages for private repos needs a paid plan (GitHub Pro or higher), and even then the published site is public. On a free account, make the repo public first (**Settings → General → Danger Zone → Change visibility**). The site contains no personal data, and results are only stored on your phone.
 2. **Open it on the iPhone** in **Safari** and go to `https://corbishley.github.io/instrument_tuner/`.
 3. **Add it to the Home Screen** (optional, recommended): tap **Share → Add to Home Screen → Add**. It then opens full-screen like an app, with its own icon.
-4. **Allow the microphone**: choose **Piano**, press **Start** and tap **Allow** when asked.
+4. **Allow the microphone**: choose **Piano** or **Guitar**, press **Start** and tap **Allow** when asked.
    - If you tapped "Don't Allow": tap **aA** in the Safari address bar → **Website Settings → Microphone → Allow**. Or go to **Settings → Apps → Safari → Microphone** and set it to **Ask** or **Allow**.
 5. **Updates**: after you push changes to `main`, GitHub Pages republishes within a few minutes. If the phone still shows the old version, pull down to reload, or close and reopen the Home Screen app.
 
@@ -86,6 +95,7 @@ The screen stays awake while the tuner is listening. Turn off Low Power Mode if 
   - **Mic** opens the microphone with echo cancellation, noise suppression and auto-gain turned off (on iOS these distort musical notes). It also keeps the screen awake.
   - **detectPitch** is a normalised difference function (the core of the YIN / McLeod methods). Given the expected note, it only searches ±70 cents around it. That avoids octave errors on bass notes whose fundamental is weak, and stops a still-ringing neighbouring key being picked up. Treble notes are measured across several cycles for finer resolution, and bass notes are downsampled first to save CPU.
   - **Gauge** draws the SVG needle display.
+- `guitar/` matches each reading to the nearest string of the chosen tuning (or only listens for the string you picked). It only switches strings after a few frames agree, so a stray reading doesn't make the display jump.
 - `piano/` handles the piano flow: which key comes next, the listening state machine (wait for a fresh strike → skip the hammer noise → collect readings until 6 agree within 4 cents → record the median), the keyboard drawing and the results.
 
 ### Accuracy
@@ -98,7 +108,7 @@ On synthetic test tones the detector is within about 1.5 cents from A0 to C8. Re
 
 ## Adding an instrument
 
-1. Create a folder, e.g. `guitar/`, with an `index.html` that loads `../shared/style.css` and `../shared/tuner.js`.
+1. Create a folder, e.g. `violin/`, with an `index.html` that loads `../shared/style.css` and `../shared/tuner.js`.
 2. Use `Tuner.Mic`, `Tuner.detectPitch` (pass a `minFreq`/`maxFreq` around the string you're expecting) and `Tuner.Gauge`.
 3. Add a card for it in the root `index.html`.
 

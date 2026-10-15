@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Guitar Tuner">
+  <title>Guitar Tuner</title>
+  <link rel="stylesheet" href="../shared/style.css">
+  <style>
+    .note { text-align: center; margin-top: 8px; }
+    .note-name { font-size: 4rem; font-weight: 800; line-height: 1; letter-spacing: -0.02em; }
+    .note-hint { color: var(--muted); margin-top: 6px; min-height: 1.45em; }
+
+    .gauge-wrap { max-width: 360px; margin: 6px auto 0; }
+    .gauge { width: 100%; height: auto; display: block; }
+    .reading { text-align: center; font-size: 1.35rem; font-weight: 700; min-height: 1.6em; font-variant-numeric: tabular-nums; }
+    .reading.good { color: var(--good); }
+    .reading.ok { color: var(--warn); }
+    .reading.bad { color: var(--bad); }
+    .status { text-align: center; min-height: 1.45em; font-weight: 600; }
+    .heard { text-align: center; min-height: 1.45em; font-variant-numeric: tabular-nums; }
+
+    .start { display: flex; justify-content: center; margin: 12px 0; }
+    .start button { width: 100%; max-width: 360px; }
+
+    .string-bar { display: flex; justify-content: space-between; align-items: center; margin: 18px 0 8px; }
+    .string-bar h2 { margin: 0; }
+    .string-bar button { min-height: 36px; padding: 6px 14px; }
+    .string-bar button[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+    .strings { display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; }
+    .string {
+      position: relative;
+      flex-direction: column;
+      gap: 0;
+      padding: 8px 2px;
+      border-radius: 12px;
+      min-height: 64px;
+    }
+    .string-note { font-size: 1.25rem; font-weight: 800; }
+    .string-num { font-size: 0.75rem; font-weight: 500; color: var(--muted); }
+    .string.active { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
+    .string[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: #fff; }
+    .string[aria-pressed="true"] .string-num { color: inherit; }
+    .string.tuned::after {
+      content: "✓";
+      position: absolute;
+      top: 3px;
+      right: 6px;
+      font-size: 0.8rem;
+      color: var(--good);
+    }
+    .string.tuned[aria-pressed="true"]::after { color: #fff; }
+
+    .error { color: var(--bad); margin-top: 10px; text-align: center; }
+  </style>
+</head>
+<body>
+  <main>
+    <a class="back-link" href="../">← Instruments</a>
+    <h1>Guitar tuner</h1>
+    <p class="muted">Pluck one string at a time and let it ring. Turn the peg until the needle is in the green.</p>
+
+    <div class="note">
+      <div class="note-name" id="note-name">–</div>
+      <div class="note-hint" id="note-hint"></div>
+    </div>
+
+    <div class="gauge-wrap" id="gauge"></div>
+    <div class="reading" id="reading"></div>
+    <div class="status" id="status"></div>
+    <div class="heard muted small" id="heard"></div>
+
+    <div class="start">
+      <button class="primary" id="start-btn">Start (allow the microphone)</button>
+    </div>
+    <p class="error" id="error" hidden></p>
+
+    <div class="string-bar">
+      <h2>Strings</h2>
+      <button id="auto-btn" aria-pressed="true">Auto-detect</button>
+    </div>
+    <div class="strings" id="strings"></div>
+    <p class="muted small">The tuner works out which string you're playing. If it picks the wrong one (e.g. a string that's very far out), tap the string you're tuning.</p>
+
+    <div class="card" style="margin-top:16px">
+      <label for="tuning" style="margin-top:0">Tuning</label>
+      <select id="tuning"></select>
+
+      <label for="a4">Reference pitch for A4 (Hz)</label>
+      <input id="a4" type="number" inputmode="decimal" min="400" max="480" step="0.5" value="440">
+    </div>
+  </main>
+
+  <script src="../shared/tuner.js"></script>
+  <script src="guitar.js"></script>
+</body>
+</html>
