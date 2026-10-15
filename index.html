@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Tuner">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <title>Instrument Tuner</title>
+  <link rel="stylesheet" href="shared/style.css">
+  <style>
+    .instruments {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+      gap: 12px;
+      margin-top: 20px;
+    }
+    .instrument {
+      display: block;
+      text-decoration: none;
+      color: var(--text);
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 18px 16px;
+      min-height: 120px;
+    }
+    a.instrument:hover { border-color: var(--accent); }
+    .instrument .icon { font-size: 2rem; line-height: 1; }
+    .instrument .name { font-weight: 700; font-size: 1.1rem; margin-top: 10px; }
+    .instrument .desc { color: var(--muted); font-size: 0.9rem; }
+    .instrument.soon { opacity: 0.5; }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Instrument Tuner</h1>
+    <p class="muted">Choose an instrument. Everything runs in your browser; audio never leaves your device.</p>
+
+    <!-- Add new instruments here: one folder per instrument, using shared/tuner.js. -->
+    <div class="instruments">
+      <a class="instrument" href="piano/">
+        <div class="icon" aria-hidden="true">🎹</div>
+        <div class="name">Piano</div>
+        <div class="desc">Walks you through every key and maps how far each one is off.</div>
+      </a>
+      <div class="instrument soon" aria-disabled="true">
+        <div class="icon" aria-hidden="true">🎸</div>
+        <div class="name">Guitar</div>
+        <div class="desc">Coming later.</div>
+      </div>
+    </div>
+  </main>
+</body>
+</html>

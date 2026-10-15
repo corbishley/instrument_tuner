@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Piano Tuner">
+  <title>Piano Tuner</title>
+  <link rel="stylesheet" href="../shared/style.css">
+  <style>
+    .row { display: flex; gap: 10px; flex-wrap: wrap; }
+    .row > * { flex: 1 1 auto; }
+    .check { display: flex; gap: 10px; align-items: flex-start; font-weight: 400; margin-top: 14px; }
+    .check input { width: 20px; height: 20px; margin: 2px 0 0; flex: none; }
+
+    /* Tuning view */
+    .progress { display: flex; justify-content: space-between; align-items: baseline; margin-top: 8px; }
+    .progress-bar { height: 6px; background: var(--surface-2); border-radius: 3px; overflow: hidden; margin: 8px 0 14px; }
+    .progress-bar > div { height: 100%; background: var(--accent); width: 0; transition: width 200ms; }
+
+    .note { text-align: center; }
+    .note-name { font-size: 4rem; font-weight: 800; line-height: 1; letter-spacing: -0.02em; }
+    .note-hint { color: var(--muted); margin-top: 6px; min-height: 1.45em; }
+
+    .gauge-wrap { max-width: 360px; margin: 6px auto 0; }
+    .gauge { width: 100%; height: auto; display: block; }
+    .reading { text-align: center; font-size: 1.35rem; font-weight: 700; min-height: 1.6em; font-variant-numeric: tabular-nums; }
+    .reading.good { color: var(--good); }
+    .reading.ok { color: var(--warn); }
+    .reading.bad { color: var(--bad); }
+    .status { text-align: center; color: var(--muted); min-height: 1.45em; }
+
+    .controls { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin: 16px 0; }
+    .controls button { padding: 10px 6px; }
+
+    /* Keyboard */
+    .keyboard-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; border-radius: 8px; }
+    .keyboard { display: block; width: 100%; min-width: 900px; height: auto; }
+    .keyboard.compact { min-width: 620px; }
+    .keyboard rect { stroke: var(--black-key); stroke-width: 1; cursor: pointer; }
+    .keyboard .white { fill: var(--white-key); }
+    .keyboard .black { fill: var(--black-key); }
+    .keyboard .good { fill: var(--good); }
+    .keyboard .ok { fill: var(--warn); }
+    .keyboard .bad { fill: var(--bad); }
+    .keyboard .black.good, .keyboard .black.ok, .keyboard .black.bad { filter: brightness(0.75); }
+    .keyboard .current { fill: var(--accent); filter: none; }
+    .keyboard .marker { fill: var(--accent); }
+    .keyboard text { font-size: 9px; fill: var(--muted); text-anchor: middle; pointer-events: none; }
+
+    .legend { display: flex; gap: 14px; flex-wrap: wrap; font-size: 0.85rem; color: var(--muted); margin-top: 8px; }
+    .legend span::before { content: ""; display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 6px; background: var(--c); }
+
+    /* Results */
+    .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; margin: 12px 0; }
+    .stat { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 12px; }
+    .stat .value { font-size: 1.5rem; font-weight: 800; font-variant-numeric: tabular-nums; }
+    .stat .label { color: var(--muted); font-size: 0.85rem; }
+    .worst { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+    .worst td { padding: 8px 4px; border-bottom: 1px solid var(--border); }
+    .worst td:last-child { text-align: right; font-weight: 600; }
+    .seg { display: inline-flex; border: 1px solid var(--border); border-radius: 999px; overflow: hidden; }
+    .seg button { border: 0; border-radius: 0; min-height: 36px; padding: 6px 12px; font-weight: 500; }
+    .seg button[aria-pressed="true"] { background: var(--accent); color: #fff; }
+
+    .error { color: var(--bad); margin-top: 10px; }
+  </style>
+</head>
+<body>
+  <main>
+    <a class="back-link" href="../">← Instruments</a>
+    <h1>Piano tuner</h1>
+
+    <!-- Setup -->
+    <section id="setup">
+      <p class="muted">Play each key when it's highlighted. The tuner listens, shows how far off the key is, then moves on. Put your phone on the music stand in a quiet room.</p>
+
+      <div class="card" id="resume-card" hidden>
+        <p><strong>You have an unfinished check</strong> <span class="muted" id="resume-detail"></span></p>
+        <div class="row" style="margin-top:10px">
+          <button class="primary" id="resume-btn">Continue</button>
+          <button id="results-btn">See results</button>
+          <button id="discard-btn">Start over</button>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:12px">
+        <label for="mode">What to check</label>
+        <select id="mode">
+          <option value="full">All 88 keys (about 10 minutes)</option>
+          <option value="quick">Quick check: every A and E (15 keys)</option>
+        </select>
+
+        <label for="order">Order</label>
+        <select id="order">
+          <option value="outward">Start at A4, go up, then down (how tuners do it)</option>
+          <option value="up">Lowest key to highest</option>
+        </select>
+
+        <label for="a4">Reference pitch for A4 (Hz)</label>
+        <input id="a4" type="number" inputmode="decimal" min="400" max="480" step="0.5" value="440">
+
+        <label class="check">
+          <input type="checkbox" id="stretch" checked>
+          <span>Allow for stretch tuning<br><span class="muted small">Pianos are tuned slightly flat in the bass and sharp in the treble on purpose. Leave this on unless you know otherwise.</span></span>
+        </label>
+
+        <div style="margin-top:16px">
+          <button class="primary" id="start-btn" style="width:100%">Start (allow the microphone)</button>
+        </div>
+        <p class="error" id="error" hidden></p>
+      </div>
+    </section>
+
+    <!-- Tuning -->
+    <section id="tuning" hidden>
+      <div class="progress">
+        <span id="progress-text"></span>
+        <span class="muted small" id="target-text"></span>
+      </div>
+      <div class="progress-bar"><div id="progress-fill"></div></div>
+
+      <div class="note">
+        <div class="note-name" id="note-name">A4</div>
+        <div class="note-hint" id="note-hint"></div>
+      </div>
+
+      <div class="gauge-wrap" id="gauge"></div>
+      <div class="reading" id="reading"></div>
+      <div class="status" id="status"></div>
+
+      <div class="controls">
+        <button id="prev-btn">← Back</button>
+        <button id="redo-btn">Redo</button>
+        <button id="skip-btn">Skip →</button>
+        <button id="finish-btn">Results</button>
+      </div>
+
+      <div class="keyboard-scroll" id="tuning-kb-scroll"></div>
+      <p class="muted small">Tap any key to jump to it.</p>
+    </section>
+
+    <!-- Results -->
+    <section id="results" hidden>
+      <p class="muted" id="results-summary"></p>
+
+      <div class="row" style="align-items:center; margin: 10px 0">
+        <span class="muted small" style="flex:none">Judge each key against</span>
+        <div class="seg" style="flex:none">
+          <button id="judge-neighbours" aria-pressed="true">Neighbouring keys</button>
+          <button id="judge-ref" aria-pressed="false">Reference pitch</button>
+        </div>
+      </div>
+
+      <div class="keyboard-scroll" id="results-kb-scroll"></div>
+      <div class="legend">
+        <span style="--c: var(--good)">Within 5 cents</span>
+        <span style="--c: var(--warn)">5–15 cents off</span>
+        <span style="--c: var(--bad)">More than 15 cents off</span>
+        <span style="--c: var(--white-key); ">Not checked</span>
+      </div>
+
+      <div class="stats" id="stats"></div>
+
+      <h2>Furthest out</h2>
+      <table class="worst" id="worst"></table>
+
+      <div class="row" style="margin-top:18px">
+        <button class="primary" id="recheck-btn">Recheck keys that are off</button>
+        <button id="continue-btn">Back to tuning</button>
+        <button id="restart-btn">Start a new check</button>
+      </div>
+    </section>
+  </main>
+
+  <script src="../shared/tuner.js"></script>
+  <script src="piano.js"></script>
+</body>
+</html>
